@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class MouseLook : MonoBehaviour
 {
     private float X, Y;
     public float sensitivity;
-    public Transform bodyTransform, cameraTransform;
+    public Transform cameraTransform;
+
+    private PhotonView photonView;
 
 
     const float MIN_X = 0.0f;
@@ -20,24 +23,34 @@ public class MouseLook : MonoBehaviour
         X = euler.x;
         Y = euler.y;
     }
+
+    void Start() 
+    {
+        photonView = GetComponent<PhotonView>();
+    }
      
     void Update()
     {
-        X += Input.GetAxis("Mouse X") * (sensitivity * Time.deltaTime);
-
-        if (X < MIN_X) 
-            X += MAX_X;
-        else if (X > MAX_X) 
-            X -= MAX_X;
-
-        Y -= Input.GetAxis("Mouse Y") * (sensitivity * Time.deltaTime);
-        if (Y < MIN_Y) 
-            Y = MIN_Y;
-        else if (Y > MAX_Y) 
-            Y = MAX_Y;
-     
-        bodyTransform.rotation = Quaternion.Euler(0.0f, X, 0.0f);
-        cameraTransform.rotation = Quaternion.Euler(Y, X, 0.0f);
+        if(photonView.IsMine && PhotonNetwork.IsConnected == true) 
+        {
+            X += Input.GetAxis("Mouse X") * (sensitivity * Time.deltaTime);
+            if (X < MIN_X) 
+                X += MAX_X;
+            else if (X > MAX_X) 
+                X -= MAX_X;
+            Y -= Input.GetAxis("Mouse Y") * (sensitivity * Time.deltaTime);
+            if (Y < MIN_Y) 
+                Y = MIN_Y;
+            else if (Y > MAX_Y) 
+                Y = MAX_Y;
+            transform.rotation = Quaternion.Euler(0.0f, X, 0.0f);
+            cameraTransform.rotation = Quaternion.Euler(Y, X, 0.0f);
+        }
+        else
+        {
+            cameraTransform.gameObject.SetActive(false);
+        }
+        
     }
 
 }
