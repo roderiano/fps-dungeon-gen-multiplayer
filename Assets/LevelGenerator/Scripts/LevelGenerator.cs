@@ -2,36 +2,40 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using Photon.Pun;
 
 public class LevelGenerator : MonoBehaviour
 {
     [Range(5, 25)]
     [SerializeField]
     private int numMaxOfRooms;
-    [SerializeField]
+
     private Transform[] availableRooms;
-    
     private List<Transform> rooms = new List<Transform>();
     private List<Transform> connectionPoints = new List<Transform>();
  
     void Start()
     {
-        availableRooms = transform.Find("AvailableRooms").Cast<Transform>().ToArray();
-        StartCoroutine("Generate");
+        if(PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient)
+        {
+            availableRooms = transform.Find("AvailableRooms").Cast<Transform>().ToArray();
+            StartCoroutine("Generate");
+        }
     }
 
 
-    IEnumerator Generate()
+    /// <summary>Generate procedural level.</summary>
+    void Generate()
     {
         while(rooms.Count < numMaxOfRooms)
         {
-            yield return new WaitForSeconds(0.02f);
-
             Transform roomPoint = connectionPoints.Count > 0 ? connectionPoints[Random.Range(0, connectionPoints.Count - 1)] : transform;
             CreateRoom(roomPoint); 
         }
     }  
 
+    /// <summary>Try create room at  <paramref name="point"/>.</summary>
+    /// <param name="pooint">Point of new Room</param>
     void CreateRoom(Transform point)
     {
         List<RoomConfiguration> compatibleRooms = new List<RoomConfiguration>();
@@ -50,7 +54,6 @@ public class LevelGenerator : MonoBehaviour
 
                 if(CheckRoomInstersects(tempRoom))
                 {
-                    //compatibleRooms.Add(tempRoom);
                     compatibleRooms.Add(new RoomConfiguration(tempRoom, tempRoom.position, tempRoom.rotation));
                 }
             }
@@ -59,7 +62,7 @@ public class LevelGenerator : MonoBehaviour
         if(compatibleRooms.Count > 0)
         {
             RoomConfiguration compatibleRoom = compatibleRooms[Random.Range(0, compatibleRooms.Count)];
-            Transform newRoom = Instantiate(compatibleRoom.room, compatibleRoom.position, compatibleRoom.rotation);
+            Transform newRoom = PhotonNetwork.Instantiate(compatibleRoom.room.name, compatibleRoom.position, compatibleRoom.rotation).transform;
             newRoom.gameObject.SetActive(true);
             rooms.Add(newRoom);
             connectionPoints.AddRange(newRoom.GetComponent<Room>().connectionPoints);
@@ -67,6 +70,10 @@ public class LevelGenerator : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Check if <paramref name="tempRoom"/> intersects another room bounds.
+    /// </summary>
+    /// <param name="tempRoom">Room to check intersects</param>
     bool CheckRoomInstersects(Transform tempRoom)
     {
         bool flag = true;

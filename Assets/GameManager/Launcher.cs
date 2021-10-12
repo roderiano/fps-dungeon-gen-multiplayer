@@ -6,8 +6,6 @@ using UnityEngine.UI;
 
 public class Launcher : MonoBehaviourPunCallbacks
 {
-
-
     public InputField playerNameInputField;
 
     void Start()
