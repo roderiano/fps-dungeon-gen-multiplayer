@@ -34,7 +34,7 @@ public class LevelGenerator : MonoBehaviour
 
     void CreateRoom(Transform point)
     {
-        List<Transform> compatibleRooms = new List<Transform>();
+        List<RoomConfiguration> compatibleRooms = new List<RoomConfiguration>();
 
         foreach(Transform tempRoom in availableRooms)
         {
@@ -47,19 +47,19 @@ public class LevelGenerator : MonoBehaviour
                 tempRoom.rotation = rot * tempRoom.rotation;
                 tempRoom.rotation = Quaternion.Euler(tempRoom.eulerAngles.x, tempRoom.eulerAngles.y, 0);
                 tempRoom.position = point.position - (tempConnection.position - tempRoom.position);
-            }
-            
-               
-            if(CheckRoomInstersects(tempRoom))
-            {
-                compatibleRooms.Add(tempRoom);
+
+                if(CheckRoomInstersects(tempRoom))
+                {
+                    //compatibleRooms.Add(tempRoom);
+                    compatibleRooms.Add(new RoomConfiguration(tempRoom, tempRoom.position, tempRoom.rotation));
+                }
             }
         }
 
         if(compatibleRooms.Count > 0)
         {
-            Transform compatibleRoom = compatibleRooms[Random.Range(0, compatibleRooms.Count - 1)];
-            Transform newRoom = Instantiate(compatibleRoom, compatibleRoom.position, compatibleRoom.rotation);
+            RoomConfiguration compatibleRoom = compatibleRooms[Random.Range(0, compatibleRooms.Count)];
+            Transform newRoom = Instantiate(compatibleRoom.room, compatibleRoom.position, compatibleRoom.rotation);
             newRoom.gameObject.SetActive(true);
             rooms.Add(newRoom);
             connectionPoints.AddRange(newRoom.GetComponent<Room>().connectionPoints);
@@ -87,4 +87,20 @@ public class LevelGenerator : MonoBehaviour
         return flag;
     }
     
+}
+
+[System.Serializable]
+public class RoomConfiguration 
+{
+    public Transform room;
+    public Vector3 position;
+    public Quaternion rotation;
+
+    public RoomConfiguration(Transform room, Vector3 position, Quaternion rotation) 
+    {
+        this.room = room;
+        this.position = position;
+        this.rotation = rotation;
+    }
+
 }
