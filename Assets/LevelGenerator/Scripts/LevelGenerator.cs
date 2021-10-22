@@ -32,6 +32,8 @@ public class LevelGenerator : MonoBehaviour
             Transform roomPoint = connectionPoints.Count > 0 ? connectionPoints[Random.Range(0, connectionPoints.Count - 1)] : transform;
             CreateRoom(roomPoint); 
         }
+
+        ActiveDoors();
     }  
 
     /// <summary>Try create room at  <paramref name="point"/>.</summary>
@@ -66,6 +68,7 @@ public class LevelGenerator : MonoBehaviour
             newRoom.gameObject.SetActive(true);
             rooms.Add(newRoom);
             connectionPoints.AddRange(newRoom.GetComponent<Room>().connectionPoints);
+            connectionPoints.RemoveAll(t => t.position == point.position);
         }
 
     }
@@ -92,6 +95,13 @@ public class LevelGenerator : MonoBehaviour
         } 
 
         return flag;
+    }
+
+    /// <summary>Active Doors by Connection Points.</summary>
+    void ActiveDoors()
+    {
+        foreach(Transform point in connectionPoints)
+            point.Find("Door").gameObject.SetActive(true);
     }
     
 }

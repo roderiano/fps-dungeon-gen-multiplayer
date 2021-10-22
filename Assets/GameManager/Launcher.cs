@@ -30,7 +30,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
         {
-            PhotonNetwork.LoadLevel("SampleScene");
+            PhotonNetwork.LoadLevel("Dungeon");
         }   
     }
 
