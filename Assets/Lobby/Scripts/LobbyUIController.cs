@@ -14,6 +14,9 @@ public class LobbyUIController : MonoBehaviour
     public Image avatarImage;
     public Text nicknameText;
 
+    /// <summary>
+    /// Active SteamConfiguration UI
+    /// </summary>
     public void ActiveSteamConfiguration() 
     {
         tokenInputField.text = PlayerPrefs.GetString("token");
@@ -23,6 +26,9 @@ public class LobbyUIController : MonoBehaviour
         lobby.SetActive(false);
     }
 
+    /// <summary>
+    /// Active Lobby UI
+    /// </summary>
     public void ActiveLobby() 
     {
         SteamWrapper steamWrapper = Object.FindObjectOfType<SteamWrapper>();
@@ -33,11 +39,17 @@ public class LobbyUIController : MonoBehaviour
         lobby.SetActive(true);
     }
 
+    /// <summary>
+    /// Get token from TokenInputField
+    /// </summary>
     public string GetToken() 
     {
         return tokenInputField.text;
     }
 
+    /// <summary>
+    /// Get token from SteamIDInputField
+    /// </summary>
     public string GetSteamID() 
     {
         return steamIDInputField.text;

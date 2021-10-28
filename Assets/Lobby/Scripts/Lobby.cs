@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
@@ -20,6 +20,9 @@ public class Lobby : MonoBehaviourPunCallbacks
         StartCoroutine(WaitAuthenticationToStartLobby());
     }
 
+    /// <summary>
+    /// Wait for SteamWrapper authentication to active lobby UI
+    /// </summary>
     IEnumerator WaitAuthenticationToStartLobby()
     {
         lobbyUIController.ActiveSteamConfiguration();
@@ -30,6 +33,9 @@ public class Lobby : MonoBehaviourPunCallbacks
         lobbyUIController.ActiveLobby();
     }
 
+    /// <summary>
+    /// Call SteamWrapper to authenticate
+    /// </summary>
     public void Authenticate() 
     {
         steamWrapper.Authenticate(lobbyUIController.GetToken(), lobbyUIController.GetSteamID());
@@ -37,11 +43,6 @@ public class Lobby : MonoBehaviourPunCallbacks
 
     public void Connect()
     {
-        // AuthenticationValues authValues = new AuthenticationValues();
-        // authValues.AuthType = CustomAuthenticationType.None;
-        // authValues.UserId = steamWrapper.owner.steamID;
-        // PhotonNetwork.AuthValues = authValues;
-
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.NickName = steamWrapper.owner.personName;
         PhotonNetwork.ConnectUsingSettings();
