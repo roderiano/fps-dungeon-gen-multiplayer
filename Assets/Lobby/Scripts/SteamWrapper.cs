@@ -9,6 +9,7 @@ using Leguar.TotalJSON;
 public class SteamWrapper : MonoBehaviour
 {
     public SteamUser owner = null;
+    public List<SteamUser> friendList = new List<SteamUser>();
     
     private string token;
 
@@ -58,7 +59,44 @@ public class SteamWrapper : MonoBehaviour
         // Save settings
         PlayerPrefs.SetString("token", token);
         PlayerPrefs.SetString("steamID", steamUser.steamID);
+
+        // Refresh friend list
+        StartCoroutine(RefreshFriendList(steamUser.steamID));
     }
+
+    IEnumerator RefreshFriendList(string steamID)
+    {
+        friendList.Clear();
+
+        string url = string.Format("http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key={0}&steamid={1}&relationship=friend", token, steamID);
+        UnityWebRequest friendListRequest = UnityWebRequest.Get(url);
+ 
+        yield return friendListRequest.SendWebRequest();
+
+        if (friendListRequest.result == UnityWebRequest.Result.ConnectionError || friendListRequest.result == UnityWebRequest.Result.ProtocolError)
+        {
+            Debug.Log("Failed to get friend list. Try again later..."); 
+        }
+        else
+        { 
+            JSON response = JSON.ParseString(friendListRequest.downloadHandler.text);
+            JArray friends = response.GetJSON("friendslist").GetJArray("friends");
+
+            for(int i = 0; i < friends.Length; i++)
+            {
+                JSON friend = friends.GetJSON(i);
+                string id = friend.GetString("steamid");
+                StartCoroutine(GetUser(id, AddFriend));
+            }   
+        }
+    }
+
+    private void AddFriend(SteamUser steamUser)
+    {
+        friendList.Add(steamUser);
+        Object.FindObjectOfType<LobbyUIController>().AddFriend(steamUser);
+    }
+
 
     public void GenerateToken() 
     {
