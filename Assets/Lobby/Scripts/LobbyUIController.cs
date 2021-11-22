@@ -2,71 +2,97 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Photon.Realtime;
+
+public enum MenuSection 
+{
+    MainMenu = 0,
+    LobbyMenu = 1
+}
 
 public class LobbyUIController : MonoBehaviour
 {
-    [Header("Steam Configuration")]
-    public GameObject steamConfiguration;
-    public InputField tokenInputField, steamIDInputField;
+    [Header("Main Menu")]
+    public InputField nicknameInputField;
+    public InputField roomNameInputField;
 
-    [Header("Lobby")]
-    public GameObject lobby;
-    public Image avatarImage;
-    public Text nicknameText;
-    public GameObject friendListContent;
-    public GameObject friendSlotGO;
+    public Transform mainMenuPanel;
+
+    [Header("Lobby Menu")]
+    public Transform playerListTransform;
+    public Transform lobbyMenuPanel;
+    public Color readyColor, notReadyColor;
+
+    void Awake()
+    {
+        nicknameInputField.text = PlayerPrefs.GetString("Nickname");
+        SwitchMenuSection(MenuSection.MainMenu);
+    }
+
+    void Update() 
+    {
+        AdjustPlayerListView();
+    }
+    
 
     /// <summary>
-    /// Active SteamConfiguration UI
+    /// Save nickname on PlayerPrefs
     /// </summary>
-    public void ActiveSteamConfiguration() 
+    public void SaveNickName() 
     {
-        tokenInputField.text = PlayerPrefs.GetString("token");
-        steamIDInputField.text = PlayerPrefs.GetString("steamID");
-
-        steamConfiguration.SetActive(true);
-        lobby.SetActive(false);
+        PlayerPrefs.SetString("Nickname", nicknameInputField.text);
     }
 
     /// <summary>
-    /// Active Lobby UI
+    /// Get nickname from nicknameInputField
     /// </summary>
-    public void ActiveLobby() 
+    public string GetNickname() 
     {
-        SteamWrapper steamWrapper = Object.FindObjectOfType<SteamWrapper>();
-        nicknameText.text = steamWrapper.owner.personName;
-        avatarImage.sprite = steamWrapper.owner.avatar;
-        
-        steamConfiguration.SetActive(false);
-        lobby.SetActive(true);
+        return nicknameInputField.text;
     }
 
     /// <summary>
-    /// Add FriendSlotGO to FriendList view
+    /// Get room name from roomNameInputField
     /// </summary>
-    public void AddFriend(SteamUser steamUser) 
+    public string GetRoomName() 
     {
-        GameObject friendSlot = Instantiate(friendSlotGO, Vector3.zero, new Quaternion(0, 0, 0, 0), friendListContent.transform);
-        RectTransform friendSlotRT = friendSlot.GetComponent<RectTransform>();
-        RectTransform friendListRT = friendListContent.GetComponent<RectTransform>();
+        return roomNameInputField.text;
+    }
 
-        friendSlot.transform.Find("Avatar").GetComponent<Image>().sprite = steamUser.avatar;
-        friendSlot.transform.Find("NickName").GetComponent<Text>().text = steamUser.personName;
+
+    /// <summary>
+    /// Switch menu section
+    /// </summary>
+    /// <param name="section">Menu section</param>
+    public void SwitchMenuSection(MenuSection section) 
+    {
+        switch (section)
+        {
+            case MenuSection.LobbyMenu:
+                lobbyMenuPanel.gameObject.SetActive(true);
+                mainMenuPanel.gameObject.SetActive(false);
+                break;
+            case MenuSection.MainMenu:
+                lobbyMenuPanel.gameObject.SetActive(false);
+                mainMenuPanel.gameObject.SetActive(true);
+                break;
+        }
     }
 
     /// <summary>
-    /// Get token from TokenInputField
+    /// Adjust grid frorm player list view
     /// </summary>
-    public string GetToken() 
+    private void AdjustPlayerListView() 
     {
-        return tokenInputField.text;
+        Rect playerListRect = playerListTransform.GetComponent<RectTransform>().rect;
+        GridLayoutGroup grid = playerListTransform.GetComponent<GridLayoutGroup>();
+        grid.cellSize = new Vector2(playerListRect.width, (playerListRect.height - grid.spacing.y) / 4);
     }
+    
 
-    /// <summary>
-    /// Get token from SteamIDInputField
-    /// </summary>
-    public string GetSteamID() 
+    public void UpdateReadyButton(bool ready)
     {
-        return steamIDInputField.text;
+        lobbyMenuPanel.Find("ReadyButton").GetComponent<Image>().color =  ready ? notReadyColor : readyColor;
+        lobbyMenuPanel.Find("ReadyButton/Text").GetComponent<Text>().text = ready ? "NOT READY" : "READY";
     }
 }

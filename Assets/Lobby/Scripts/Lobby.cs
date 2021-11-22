@@ -4,61 +4,63 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 
-[RequireComponent(typeof(SteamWrapper))]
 [RequireComponent(typeof(LobbyUIController))]
 public class Lobby : MonoBehaviourPunCallbacks
 {
-    
-    private SteamWrapper steamWrapper;
     private LobbyUIController lobbyUIController;
 
     void Start()
     {
-        steamWrapper = GetComponent<SteamWrapper>();
         lobbyUIController = GetComponent<LobbyUIController>();
-
-        StartCoroutine(WaitAuthenticationToStartLobby());
-    }
-
-    /// <summary>
-    /// Wait for SteamWrapper authentication to active lobby UI
-    /// </summary>
-    IEnumerator WaitAuthenticationToStartLobby()
-    {
-        lobbyUIController.ActiveSteamConfiguration();
-
-        while(steamWrapper.owner == null)
-            yield return new WaitForSeconds(0.1f);
-        
-        lobbyUIController.ActiveLobby();
-    }
-
-    /// <summary>
-    /// Call SteamWrapper to authenticate
-    /// </summary>
-    public void Authenticate() 
-    {
-        steamWrapper.Authenticate(lobbyUIController.GetToken(), lobbyUIController.GetSteamID());
-    }
-
-    public void Connect()
-    {
+       
         PhotonNetwork.AutomaticallySyncScene = true;
-        PhotonNetwork.NickName = steamWrapper.owner.personName;
+        PhotonNetwork.NickName = lobbyUIController.GetNickname();
+    }
+
+    public void JoinOffline() 
+    {
+        PhotonNetwork.OfflineMode = true;
+    }
+    
+    public void JoinOnline() 
+    {
         PhotonNetwork.ConnectUsingSettings();
-        PhotonNetwork.GameVersion = "0.0.0";
     }
 
     public override void OnConnectedToMaster()
     {
-        PhotonNetwork.JoinRandomOrCreateRoom();
+        RoomOptions options = new RoomOptions();
+        options.MaxPlayers = 4;
+        PhotonNetwork.JoinOrCreateRoom(lobbyUIController.GetRoomName() != "" ? lobbyUIController.GetRoomName() : "0", options, TypedLobby.Default);
     }
 
-    public override void OnJoinedRoom() 
+    public override void OnJoinedRoom()
     {
-        if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
-        {
-            PhotonNetwork.LoadLevel("Sanctuary");
-        }   
+        lobbyUIController.SwitchMenuSection(MenuSection.LobbyMenu);
+        GameObject playerLobbyInstanceGO = PhotonNetwork.Instantiate("PlayerLobbyInstance", transform.position, transform.rotation);
     }
+
+    public void SwitchReady()
+    {
+
+        PhotonView[] pvs = Object.FindObjectsOfType<PhotonView>();
+        int playerReadyCount = 0;
+
+        foreach(PhotonView pv in pvs)
+        {
+            PlayerLobbyInstance instance = pv.gameObject.GetComponent<PlayerLobbyInstance>();
+            if(pv.IsMine)
+                pv.RPC("SetReady", RpcTarget.AllBuffered);
+
+            if(instance.ready) 
+                playerReadyCount++;
+
+            lobbyUIController.UpdateReadyButton(instance.ready);
+        }
+            
+        if(PhotonNetwork.CurrentRoom.PlayerCount == playerReadyCount)
+            PhotonNetwork.LoadLevel("Sanctuary");
+
+    }
+
 }
