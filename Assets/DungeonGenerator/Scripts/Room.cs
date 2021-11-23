@@ -6,17 +6,6 @@ public class Room : MonoBehaviour
 {
     public Transform[] connectionPoints;
 
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;

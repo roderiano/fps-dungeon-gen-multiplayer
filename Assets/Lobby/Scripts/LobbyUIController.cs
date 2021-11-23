@@ -90,6 +90,10 @@ public class LobbyUIController : MonoBehaviour
     }
     
 
+    /// <summary>
+    /// Update ReadyButton style by ready flag
+    /// </summary>
+    /// <param name="ready">Ready flag</param>
     public void UpdateReadyButton(bool ready)
     {
         lobbyMenuPanel.Find("ReadyButton").GetComponent<Image>().color =  ready ? notReadyColor : readyColor;

@@ -21,10 +21,12 @@ public class PlayerLobbyInstance : MonoBehaviour
             photonView.RPC("SetParent", RpcTarget.AllBuffered);
             photonView.RPC("SetNickName", RpcTarget.AllBuffered, photonView.Owner.NickName);
             photonView.RPC("SetStatusLabel", RpcTarget.AllBuffered, ready);
-            
         }
     }
 
+    /// <summary>
+    /// Remote procedure call to change ready flag
+    /// </summary>
     [PunRPC]    
     public void SetReady()
     {
@@ -32,18 +34,30 @@ public class PlayerLobbyInstance : MonoBehaviour
         photonView.RPC("SetStatusLabel", RpcTarget.AllBuffered, ready);
     }
 
+    /// <summary>
+    /// Remote procedure call to set parent of this UI GameObject
+    /// </summary>    
     [PunRPC]
     void SetParent()
     {
         transform.SetParent(GameObject.Find("PlayerList").transform);
     }
 
+    /// <summary>
+    /// Remote procedure call to set NickName of this UI GameObject
+    /// </summary>
+    /// <param name="nickName">Own NickName</param>
     [PunRPC]
     void SetNickName(string nickName)
     {
         transform.Find("Nickname").GetComponent<Text>().text = nickName;
     }
 
+    
+    /// <summary>
+    /// Remote procedure call to set own label status style by _ready flag
+    /// </summary>
+    /// <param name="nickName">Own NickName</param>
     [PunRPC]
     void SetStatusLabel(bool _ready)
     {

@@ -9,13 +9,8 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        PhotonNetwork.Instantiate(this.playerPrefab.name, transform.position, Quaternion.identity, 0);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        if(PhotonNetwork.IsConnected)
+            PhotonNetwork.Instantiate(this.playerPrefab.name, transform.position, Quaternion.identity, 0);
     }
 
     void LoadDungeon() 

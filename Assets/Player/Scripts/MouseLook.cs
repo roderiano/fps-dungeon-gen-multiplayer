@@ -27,6 +27,7 @@ public class MouseLook : MonoBehaviour
     void Start() 
     {
         photonView = GetComponent<PhotonView>();
+        Cursor.lockState = CursorLockMode.Locked;
     }
      
     void Update()
