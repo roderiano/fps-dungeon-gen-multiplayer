@@ -46,8 +46,7 @@ public class CharacterInteractionHandler : MonoBehaviour
     /// <param name="interactableObject">Object to interact</param>
     void CallInteraction(InteractableObject interactableObject) 
     {
-        BaseEventData eventData = new BaseEventData(EventSystem.current);
-        eventData.selectedObject = this.gameObject;
-        interactableObject.Interact(eventData);
+        PhotonView interactableObjectPhotonView = interactableObject.gameObject.GetComponent<PhotonView>();
+        interactableObjectPhotonView.RPC("Interact", RpcTarget.AllBuffered, photonView.ViewID);
     }
 }

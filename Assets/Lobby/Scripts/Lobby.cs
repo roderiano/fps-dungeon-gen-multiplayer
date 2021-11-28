@@ -36,9 +36,9 @@ public class Lobby : MonoBehaviourPunCallbacks
         }
 
         /// <summary>
-        /// Switch ready flag on own PlayerLobbyInstance and check to load dungeon scene
+        /// Switch ready flag on own PlayerLobbyInstance and check to load sanctuary scene
         /// </summary>    
-        public void SwitchReadyFlagAndCheckToLoadDungeon()
+        public void SwitchReadyFlagAndCheckToLoadSanctuary()
         {
 
             PhotonView[] pvs = Object.FindObjectsOfType<PhotonView>();

@@ -26,16 +26,19 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Switch ready flag to load dungeon by eventData.selectedObject
+    /// Switch ready flag to load dungeon by source player PhotonView and check if can load scene
     /// </summary>
-    /// <param name="eventData"></param>
-    public void SwitchReadyToDungeon(BaseEventData eventData) 
+    /// <param name="sourcePlayerPhotonView">Player PhotonView who switched the flag</param>
+    public void SwitchPlayerReadyFlagToDungeon(PhotonView sourcePlayerPhotonView) 
     {
-        PhotonView photonView = eventData.selectedObject.GetComponent<PhotonView>();
-
-        if(playersReadyToDungeon.Contains(photonView.Owner))
-            playersReadyToDungeon.Remove(photonView.Owner);
+        if(playersReadyToDungeon.Contains(sourcePlayerPhotonView.Owner))
+            playersReadyToDungeon.Remove(sourcePlayerPhotonView.Owner);
         else
-            playersReadyToDungeon.Add(photonView.Owner);
+            playersReadyToDungeon.Add(sourcePlayerPhotonView.Owner);
+
+        
+        // Load dungeon
+        if(PhotonNetwork.CurrentRoom.PlayerCount == playersReadyToDungeon.Count)
+            PhotonNetwork.LoadLevel("Dungeon");
     }
 }

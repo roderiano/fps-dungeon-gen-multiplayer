@@ -44,6 +44,10 @@ MonoBehaviour:
   - SetStatus
   - SetStatusLabel
   - SetReady
+  - SwitchReadyFlagAndCheckToLoadDungeon
+  - SwitchReadyToDungeon
+  - CallInteraction
+  - Interact
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1
