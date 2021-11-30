@@ -14,7 +14,9 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         if(PhotonNetwork.IsConnected)
-            PhotonNetwork.Instantiate(this.playerPrefab.name, transform.position, Quaternion.identity, 0);
+        {
+            PhotonNetwork.Instantiate(this.playerPrefab.name, Vector3.zero, Quaternion.identity, 0);
+        }   
     }
 
     /// <summary>

@@ -84,12 +84,12 @@ public class DungeonGenerator : MonoBehaviour
     bool CheckRoomInstersects(Transform tempRoom)
     {
         bool flag = true;
-        Bounds tempRoomBounds = tempRoom.gameObject.GetComponent<Renderer>().bounds;
+        Bounds tempRoomBounds = tempRoom.gameObject.GetComponent<MeshRenderer>().bounds;
 
 
         foreach(Transform room in rooms)
         {
-            Bounds roomBounds = room.gameObject.GetComponent<Renderer>().bounds;
+            Bounds roomBounds = room.gameObject.GetComponent<MeshRenderer>().bounds;
 
             if(tempRoomBounds.Intersects(roomBounds))
             {
@@ -105,7 +105,7 @@ public class DungeonGenerator : MonoBehaviour
     void ActiveDoors()
     {
         foreach(Transform point in connectionPoints)
-            point.Find("Door").gameObject.SetActive(true);
+            point.Find("Door/door").gameObject.SetActive(true);
     }
     
 }
