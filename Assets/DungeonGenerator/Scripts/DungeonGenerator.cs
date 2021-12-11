@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
@@ -16,7 +16,7 @@ public class DungeonGenerator : MonoBehaviour
  
     void Start()
     {
-        if(PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient)
+        if(PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient )
         {
             availableRooms = transform.Find("AvailableRooms").Cast<Transform>().ToArray();
             StartCoroutine("Generate");
@@ -25,40 +25,45 @@ public class DungeonGenerator : MonoBehaviour
 
 
     /// <summary>Generate procedural dungeon.</summary>
-    void Generate()
+    IEnumerator Generate()
     {
         while(rooms.Count < numMaxOfRooms)
         {
             Transform roomPoint = connectionPoints.Count > 0 ? connectionPoints[Random.Range(0, connectionPoints.Count - 1)] : transform;
-            CreateRoom(roomPoint); 
+            yield return StartCoroutine(CreateRoom(roomPoint));
         }
 
-        ActiveDoors();
+        ActiveDoors(); 
     }  
 
     /// <summary>Try create room at  <paramref name="point"/>.</summary>
-    /// <param name="point">Point of new Room</param>
-    void CreateRoom(Transform point)
+    /// <param name="connectionPoint">Point of new Room</param>
+    IEnumerator CreateRoom(Transform connectionPoint)
     {
         List<RoomConfiguration> compatibleRooms = new List<RoomConfiguration>();
 
         foreach(Transform tempRoom in availableRooms)
         {
+            tempRoom.gameObject.SetActive(true);
 
-            tempRoom.transform.position = point.position;
+            tempRoom.transform.position = connectionPoint.position;
 
             foreach(Transform tempConnection in tempRoom.GetComponent<Room>().connectionPoints)
             {
-                Quaternion rot = Quaternion.FromToRotation(tempConnection.forward, -point.forward);
+                Quaternion rot = Quaternion.FromToRotation(tempConnection.forward, -connectionPoint.forward);
                 tempRoom.rotation = rot * tempRoom.rotation;
                 tempRoom.rotation = Quaternion.Euler(tempRoom.eulerAngles.x, tempRoom.eulerAngles.y, 0);
-                tempRoom.position = point.position - (tempConnection.position - tempRoom.position);
+                tempRoom.position = connectionPoint.position - (tempConnection.position - tempRoom.position);
 
-                if(CheckRoomInstersects(tempRoom))
+                if(!CheckRoomInstersects(tempRoom, connectionPoint))
                 {
                     compatibleRooms.Add(new RoomConfiguration(tempRoom, tempRoom.position, tempRoom.rotation));
                 }
+
+                yield return null;
             }
+
+            tempRoom.gameObject.SetActive(false);
         }
 
         if(compatibleRooms.Count > 0)
@@ -72,28 +77,40 @@ public class DungeonGenerator : MonoBehaviour
             connectionPoints.AddRange(newRoom.GetComponent<Room>().connectionPoints);
 
             // Remove connection points with the same position as the new room 
-            connectionPoints.RemoveAll(t => t.position == point.position);
+            if(rooms.Count > 1)
+                connectionPoints.RemoveAll(t => t.position == connectionPoint.position);
         }
-
     }
 
     /// <summary>
     /// Check if <paramref name="tempRoom"/> intersects another room bounds.
     /// </summary>
     /// <param name="tempRoom">Room to check intersects</param>
-    bool CheckRoomInstersects(Transform tempRoom)
+    /// <param name="sourceTempConnectionPoint">Source Room to ignore check intersects</param>
+    bool CheckRoomInstersects(Transform tempRoom, Transform sourceTempConnectionPoint)
     {
-        bool flag = true;
+        bool flag = false;
         Bounds tempRoomBounds = tempRoom.gameObject.GetComponent<MeshRenderer>().bounds;
 
+        // Check if exists room for sourceConnectionPoint
+        Transform sourceRoom = sourceTempConnectionPoint.parent;
 
         foreach(Transform room in rooms)
         {
             Bounds roomBounds = room.gameObject.GetComponent<MeshRenderer>().bounds;
 
+            // Check if is source room and it isn`t inside the source
+            if(room == sourceRoom)
+            {
+                Vector3 offset = new Vector3(3f, 3f, 3f);
+                if((!roomBounds.Contains(tempRoomBounds.min + offset) && !roomBounds.Contains(tempRoomBounds.max  - offset)) &&
+                !tempRoomBounds.Contains(roomBounds.min + offset) && !tempRoomBounds.Contains(roomBounds.max  - offset))
+                    continue;
+            }
+
             if(tempRoomBounds.Intersects(roomBounds))
             {
-                flag = false;
+                flag = true;
                 break;
             }
         } 
